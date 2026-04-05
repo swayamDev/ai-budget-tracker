@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk_publishable_key",
+    "CLERK_SECRET_KEY": "@clerk_secret_key",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
+    "STRIPE_PRO_PRICE_ID": "@stripe_pro_price_id"
+  }
+}
