@@ -10,17 +10,20 @@ interface StatCardsProps {
 }
 
 export default function StatCards({ stats, currency = 'USD' }: StatCardsProps) {
-  const savingsRate = stats.income > 0 ? ((stats.income - stats.expense) / stats.income) * 100 : 0;
+  const savingsRate = stats.income > 0
+    ? ((stats.income - stats.expense) / stats.income) * 100
+    : 0;
 
   const cards = [
     {
-      title: 'Total Balance',
+      title: 'Net Balance',
       value: formatCurrency(stats.balance, currency),
       icon: Wallet,
       iconColor: 'text-primary',
       iconBg: 'bg-primary/15',
-      change: null,
+      barColor: 'bg-primary',
       desc: 'Current net balance',
+      trend: null,
     },
     {
       title: 'Monthly Income',
@@ -28,8 +31,9 @@ export default function StatCards({ stats, currency = 'USD' }: StatCardsProps) {
       icon: TrendingUp,
       iconColor: 'text-accent',
       iconBg: 'bg-accent/15',
-      change: null,
+      barColor: 'bg-accent',
       desc: 'This month',
+      trend: 'up' as const,
     },
     {
       title: 'Monthly Expenses',
@@ -37,8 +41,9 @@ export default function StatCards({ stats, currency = 'USD' }: StatCardsProps) {
       icon: TrendingDown,
       iconColor: 'text-destructive',
       iconBg: 'bg-destructive/15',
-      change: null,
+      barColor: 'bg-destructive',
       desc: 'This month',
+      trend: 'down' as const,
     },
     {
       title: 'Savings Rate',
@@ -46,28 +51,35 @@ export default function StatCards({ stats, currency = 'USD' }: StatCardsProps) {
       icon: PiggyBank,
       iconColor: 'text-warning',
       iconBg: 'bg-warning/15',
-      change: null,
-      desc: 'Of total income',
+      barColor: 'bg-warning',
+      desc: 'Of total income saved',
+      trend: savingsRate > 20 ? 'up' as const : null,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger">
       {cards.map((card) => (
         <div
           key={card.title}
-          className="glass rounded-2xl p-5 hover:bg-white/10 transition-all duration-300 group"
+          className="glass rounded-2xl p-4 md:p-5 hover:bg-card/80 transition-all duration-300 group animate-fade-in relative overflow-hidden"
         >
-          <div className="flex items-start justify-between mb-4">
-            <div className={`w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-              <card.icon className={`w-5 h-5 ${card.iconColor}`} />
+          {/* Subtle gradient accent top */}
+          <div className={`absolute top-0 left-0 right-0 h-0.5 ${card.barColor} opacity-60`} />
+
+          <div className="flex items-start justify-between mb-3 md:mb-4">
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+              <card.icon className={`w-4 h-4 md:w-5 md:h-5 ${card.iconColor}`} />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
+
+          <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
             {card.title}
           </p>
-          <p className="text-2xl font-bold text-foreground">{card.value}</p>
-          <p className="text-xs text-muted-foreground mt-1">{card.desc}</p>
+          <p className="text-xl md:text-2xl font-bold text-foreground tabular truncate">
+            {card.value}
+          </p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-1">{card.desc}</p>
         </div>
       ))}
     </div>

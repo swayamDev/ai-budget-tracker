@@ -4,13 +4,15 @@ import { useState } from "react";
 import {
   User,
   CreditCard,
-  Shield,
   Bell,
   Loader2,
   CheckCircle,
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -23,6 +25,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { UserProfile } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import Link from "next/link";
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 import type { UserWithSubscription } from "@/types";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "INR", "CAD", "AUD", "JPY", "CNY"];
@@ -32,12 +36,11 @@ interface SettingsClientProps {
 }
 
 export default function SettingsClient({ user }: SettingsClientProps) {
-  const [tab, setTab] = useState<"profile" | "billing" | "preferences">(
-    "profile",
-  );
+  const [tab, setTab] = useState<"profile" | "billing" | "preferences">("profile");
   const [currency, setCurrency] = useState(user.currency);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const isPro = user.subscription?.plan === "PRO";
 
   async function saveCurrency() {
@@ -57,9 +60,14 @@ export default function SettingsClient({ user }: SettingsClientProps) {
   }
 
   const tabs = [
-    { id: "profile", label: "Profile", icon: User },
-    { id: "billing", label: "Billing", icon: CreditCard },
+    { id: "profile",     label: "Profile",     icon: User },
+    { id: "billing",     label: "Billing",     icon: CreditCard },
     { id: "preferences", label: "Preferences", icon: Bell },
+  ] as const;
+
+  const themeOptions = [
+    { value: "dark",  label: "Dark",   icon: Moon,    desc: "Easy on the eyes at night" },
+    { value: "light", label: "Light",  icon: Sun,     desc: "Clean and bright interface" },
   ] as const;
 
   return (
@@ -77,7 +85,12 @@ export default function SettingsClient({ user }: SettingsClientProps) {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === t.id ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              tab === t.id
+                ? "bg-primary/20 text-primary shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
             <t.icon className="w-4 h-4" />
             {t.label}
@@ -116,7 +129,10 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               Your subscription details
             </p>
             <div
-              className={`rounded-xl p-4 border ${isPro ? "border-primary/30 bg-primary/10" : "border-border bg-secondary/30"}`}
+              className={cn(
+                "rounded-xl p-4 border",
+                isPro ? "border-primary/30 bg-primary/10" : "border-border bg-secondary/30"
+              )}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -153,9 +169,7 @@ export default function SettingsClient({ user }: SettingsClientProps) {
               <Button
                 variant="outline"
                 onClick={async () => {
-                  const res = await fetch("/api/stripe/portal", {
-                    method: "POST",
-                  });
+                  const res = await fetch("/api/stripe/portal", { method: "POST" });
                   const { url } = await res.json();
                   if (url) window.location.href = url;
                 }}
@@ -169,35 +183,78 @@ export default function SettingsClient({ user }: SettingsClientProps) {
 
       {/* Preferences tab */}
       {tab === "preferences" && (
-        <div className="glass rounded-2xl p-6 space-y-6">
-          <div>
-            <h3 className="font-semibold mb-1">Preferences</h3>
-            <p className="text-sm text-muted-foreground">
-              Customize your experience
+        <div className="space-y-6">
+          {/* Appearance */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Palette className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold">Appearance</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Choose how Fintrak AI looks on your device
             </p>
+            <div className="grid grid-cols-2 gap-3">
+              {themeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTheme(opt.value)}
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 rounded-xl border-2 text-left transition-all",
+                    theme === opt.value
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/40 hover:bg-secondary/50"
+                  )}
+                >
+                  <div className={cn(
+                    "w-9 h-9 rounded-lg flex items-center justify-center",
+                    theme === opt.value ? "bg-primary/20" : "bg-secondary"
+                  )}>
+                    <opt.icon className={cn(
+                      "w-4.5 h-4.5",
+                      theme === opt.value ? "text-primary" : "text-muted-foreground"
+                    )} />
+                  </div>
+                  <div>
+                    <p className={cn(
+                      "text-sm font-semibold",
+                      theme === opt.value ? "text-primary" : "text-foreground"
+                    )}>{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                  {theme === opt.value && (
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Active</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-          <div>
-            <Label>Currency</Label>
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="mt-1.5 w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Used for displaying all monetary values
-            </p>
+
+          {/* Currency */}
+          <div className="glass rounded-2xl p-6 space-y-4">
+            <div>
+              <h3 className="font-semibold mb-1">Currency</h3>
+              <p className="text-sm text-muted-foreground">
+                Used for displaying all monetary values
+              </p>
+            </div>
+            <div>
+              <Label className="text-sm mb-1.5 block">Display Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-52">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={saveCurrency} disabled={saving} className="w-fit">
+              {saving && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+              Save Preferences
+            </Button>
           </div>
-          <Button onClick={saveCurrency} disabled={saving}>
-            {saving && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />} Save
-            Preferences
-          </Button>
         </div>
       )}
     </div>

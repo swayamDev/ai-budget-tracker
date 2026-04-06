@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Brain, Sparkles, Lock, RefreshCw } from 'lucide-react';
+import { Brain, Sparkles, Lock, RefreshCw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import type { Transaction } from '@/types';
@@ -35,67 +35,69 @@ export default function AIInsightPanel({ transactions, isPro }: AIInsightPanelPr
   }
 
   return (
-    <div className="glass rounded-2xl p-6 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
+    <div className="glass rounded-2xl p-5 md:p-6 relative overflow-hidden">
+      {/* Decorative glow */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 bg-primary/15 blur-2xl rounded-full pointer-events-none" />
 
-      <div className="flex items-center gap-2 mb-4 relative">
-        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+      <div className="flex items-start gap-3 mb-4 relative">
+        <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
           <Brain className="w-4 h-4 text-primary" />
         </div>
-        <div>
-          <h3 className="font-semibold text-foreground text-sm">AI Insights</h3>
-          <p className="text-xs text-muted-foreground">Powered by GPT-4</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-foreground text-sm">AI Insights</h3>
+            {isPro && (
+              <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                Pro
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">Powered by GPT-4</p>
         </div>
-        {isPro && (
-          <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
-            PRO
-          </span>
-        )}
       </div>
 
       {!isPro ? (
-        <div className="text-center py-4">
-          <Lock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground mb-3">Upgrade to Pro for unlimited AI insights</p>
+        <div className="text-center py-5">
+          <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center mx-auto mb-3">
+            <Lock className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            Unlock personalized AI insights<br />with a Pro plan
+          </p>
           <Link href="/pricing">
-            <Button size="sm" className="w-full">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+            <Button size="sm" className="w-full gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
               Upgrade to Pro
             </Button>
           </Link>
         </div>
       ) : !generated ? (
         <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground mb-4">
-            Get AI-powered insights about your spending patterns and savings opportunities.
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            Get personalized insights on your spending patterns and savings opportunities.
           </p>
-          <Button onClick={fetchInsights} disabled={loading} size="sm" className="w-full">
+          <Button onClick={fetchInsights} disabled={loading} size="sm" className="w-full gap-1.5">
             {loading ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                Analyzing...
-              </>
+              <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Analyzing…</>
             ) : (
-              <>
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Generate Insights
-              </>
+              <><Zap className="w-3.5 h-3.5" /> Generate Insights</>
             )}
           </Button>
         </div>
       ) : (
-        <div>
-          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{insight}</p>
+        <div className="space-y-3">
+          <div className="bg-secondary/40 rounded-xl p-3.5">
+            <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{insight}</p>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={fetchInsights}
             disabled={loading}
-            className="mt-3 w-full text-xs text-muted-foreground"
+            className="w-full text-xs text-muted-foreground gap-1.5"
           >
-            <RefreshCw className={`w-3 h-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            Refresh insights
           </Button>
         </div>
       )}
