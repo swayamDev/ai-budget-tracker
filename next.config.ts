@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Disable turbopack for build — re-enable if desired; fonts load fine in real environments
 };
 
 export default nextConfig;

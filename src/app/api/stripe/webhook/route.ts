@@ -13,6 +13,11 @@ function mapStripeStatus(status: string): 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' {
   return 'CANCELLED';
 }
 
+/**
+ * Stripe v22 (API 2026-03-25.dahlia) breaking changes on Invoice:
+ * - `invoice.subscription` is REMOVED — use `invoice.parent.subscription_details.subscription`
+ * - `subscription.current_period_end` is REMOVED — use `subscription.items.data[0].current_period_end`
+ */
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get('stripe-signature');
@@ -64,16 +69,30 @@ export async function POST(req: Request) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+
+        // Stripe v22: invoice.subscription is gone — subscription ID now lives in invoice.parent
+        const parent = invoice.parent;
+        const subscriptionId =
+          parent?.type === 'subscription_details' &&
+          parent.subscription_details?.subscription
+            ? typeof parent.subscription_details.subscription === 'string'
+              ? parent.subscription_details.subscription
+              : parent.subscription_details.subscription.id
+            : null;
+
         if (!subscriptionId) break;
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+        // Stripe v22: current_period_end moved to subscription.items.data[*].current_period_end
+        const periodEnd = subscription.items?.data?.[0]?.current_period_end ?? null;
+
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
           data: {
             status: 'ACTIVE',
             plan: 'PRO',
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
           },
         });
         break;
@@ -90,11 +109,15 @@ export async function POST(req: Request) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+
+        // Stripe v22: current_period_end moved to subscription.items.data[*].current_period_end
+        const periodEnd = subscription.items?.data?.[0]?.current_period_end ?? null;
+
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscription.id },
           data: {
             status: mapStripeStatus(subscription.status),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
           },
         });
         break;

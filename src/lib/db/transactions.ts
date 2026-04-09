@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
-import { TransactionType } from '@prisma/client';
+// Prisma v7 with custom output: enums/types come from generated client, not @prisma/client
+import type { TransactionType } from '../../../generated/prisma';
 
 export interface TransactionInput {
   amount: number;

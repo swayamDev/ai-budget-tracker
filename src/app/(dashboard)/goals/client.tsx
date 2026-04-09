@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { formatCurrency, getPercentage } from '@/lib/utils';
@@ -41,7 +41,7 @@ export default function GoalsClient({ goals: initial, userId, currency }: GoalsC
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({ resolver: zodResolver(schema) as Resolver<FormData> });
 
   async function onSubmit(data: FormData) {
     try {
@@ -232,7 +232,7 @@ export default function GoalsClient({ goals: initial, userId, currency }: GoalsC
 
                 {/* Add amount */}
                 {!goal.isCompleted &&
-                  (addingAmount?.id === goal.id ? (
+                  (addingAmount !== null && addingAmount.id === goal.id ? (
                     <div className="flex gap-2 mt-3">
                       <Label htmlFor={`add-amount-${goal.id}`} className="sr-only">
                         Amount to add

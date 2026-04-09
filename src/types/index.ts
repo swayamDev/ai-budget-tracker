@@ -1,4 +1,5 @@
-import { Transaction, Budget, Goal, User, Subscription } from '@prisma/client';
+// Prisma v7 with custom output path: types come from generated client, NOT @prisma/client
+import type { Transaction, Budget, Goal, User, Subscription } from '../../generated/prisma';
 
 export type { Transaction, Budget, Goal, User, Subscription };
 

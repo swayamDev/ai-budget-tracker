@@ -1,8 +1,18 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+/**
+ * Lazy-initialized OpenAI client.
+ * Using a getter function rather than a top-level `new OpenAI()` prevents
+ * Next.js from throwing during build-time page data collection when
+ * OPENAI_API_KEY is not set in the build environment.
+ * The error surfaces at runtime (first actual API call) instead.
+ */
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY environment variable is not set');
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export async function generateFinancialInsights(transactions: Array<{
   type: string;
@@ -48,6 +58,7 @@ Provide insights about:
 
 Keep it friendly, specific, and under 200 words.`;
 
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
@@ -83,6 +94,7 @@ Transaction description: "${note}"
 
 Reply with ONLY the category name, nothing else.`;
 
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
@@ -96,7 +108,6 @@ Reply with ONLY the category name, nothing else.`;
 
 /**
  * Named export used by the AI chat API route.
- * Renamed from chatWithFinancialAdvisor to chatWithAdvisor for brevity.
  */
 export async function chatWithAdvisor(
   message: string,
@@ -120,6 +131,7 @@ User's Financial Context:
 
 Be helpful, specific, and encouraging. Keep responses concise (under 150 words). Use numbers from their data when relevant.`;
 
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -160,6 +172,7 @@ ${Object.entries(byCategory)
 
 Predict next month's likely expenses and give 2-3 specific tips to reduce spending. Keep it under 120 words with bullet points.`;
 
+  const openai = getOpenAIClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],

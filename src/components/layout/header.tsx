@@ -29,11 +29,14 @@ const PAGE_SUBTITLES: Record<string, string> = {
 };
 
 // Static mock notifications — swap for a real data fetch in production
-const STATIC_NOTIFICATIONS = [
-  { id: '1', type: 'warning', title: 'Budget Alert',     body: 'Food & Dining is at 85% of limit', time: '5m ago', read: false },
-  { id: '2', type: 'success', title: 'Goal Milestone',   body: 'Emergency Fund reached 50%!',       time: '2h ago', read: false },
-  { id: '3', type: 'info',    title: 'Monthly Summary',  body: 'Your April report is ready',        time: '1d ago', read: true },
-] as const;
+// Typed explicitly so `read` stays mutable (not narrowed to literal `false` by `as const`)
+type Notification = { id: string; type: 'warning' | 'success' | 'info'; title: string; body: string; time: string; read: boolean };
+
+const STATIC_NOTIFICATIONS: Notification[] = [
+  { id: '1', type: 'warning', title: 'Budget Alert',    body: 'Food & Dining is at 85% of limit', time: '5m ago', read: false },
+  { id: '2', type: 'success', title: 'Goal Milestone',  body: 'Emergency Fund reached 50%!',      time: '2h ago', read: false },
+  { id: '3', type: 'info',    title: 'Monthly Summary', body: 'Your April report is ready',       time: '1d ago', read: true  },
+];
 
 export default function Header({ user }: { user: UserWithSubscription }) {
   const pathname = usePathname();
@@ -265,6 +268,9 @@ export default function Header({ user }: { user: UserWithSubscription }) {
       </div>
 
       {/* User menu */}
+      {/* Note: afterSignOutUrl was removed in Clerk v7.
+          Sign-out redirect is now configured via CLERK_SIGN_OUT_URL env var
+          or by wrapping with ClerkProvider's afterSignOutUrl at the root layout. */}
       <UserButton
         appearance={{
           baseTheme: dark,
@@ -272,7 +278,6 @@ export default function Header({ user }: { user: UserWithSubscription }) {
             avatarBox: 'w-8 h-8 ring-2 ring-border hover:ring-primary transition-all rounded-full',
           },
         }}
-        afterSignOutUrl="/"
       />
     </header>
   );

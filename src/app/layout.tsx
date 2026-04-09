@@ -6,6 +6,8 @@ import {
   Bricolage_Grotesque,
   JetBrains_Mono,
 } from "next/font/google";
+import Script from "next/script";
+
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -66,7 +68,7 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
   },
 
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json",
 
   appleWebApp: {
     title: "Fintrak AI",
@@ -79,25 +81,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider appearance={{ baseTheme: dark }}>
+    <ClerkProvider appearance={{ baseTheme: dark }} afterSignOutUrl="/">
       <html
         lang="en"
         suppressHydrationWarning
         className={`${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}
       >
-        <head>
-          {/*
-           * Inline script runs synchronously BEFORE first paint.
-           * Reads saved theme from localStorage and sets the class on <html>
-           * so there is ZERO flash of wrong theme on load.
-           */}
-          <script
+        <body className="antialiased">
+          {/* ✅ FIXED: theme script using next/script */}
+          <Script
+            id="theme-init"
+            strategy="beforeInteractive"
             dangerouslySetInnerHTML={{
-              __html: `(function(){try{var t=localStorage.getItem('fintrak-theme');document.documentElement.classList.add(t==='light'?'light':'dark');}catch(e){}})();`,
+              __html: `
+(function(){
+  try {
+    var t = localStorage.getItem('fintrak-theme');
+    document.documentElement.classList.add(
+      t === 'light' ? 'light' : 'dark'
+    );
+  } catch(e) {}
+})();
+              `,
             }}
           />
-        </head>
-        <body className="antialiased">
+
           {children}
           <Toaster />
         </body>

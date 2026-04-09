@@ -16,7 +16,7 @@ import BudgetOverview from '@/components/dashboard/budget-overview';
 import GoalsWidget from '@/components/dashboard/goals-widget';
 import AIInsightPanel from '@/components/dashboard/ai-insight-panel';
 import { DashboardGreeting } from '@/components/dashboard/greeting';
-import { DashboardSkeleton } from '@/components/dashboard/dashboard-skeleton';
+import DashboardSkeleton from '@/components/dashboard/dashboard-skeleton';
 
 export const metadata = { title: 'Dashboard' };
 

@@ -1,8 +1,34 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-  typescript: true,
+/**
+ * Lazy Stripe client getter.
+ * Prevents Next.js build-time crashes when STRIPE_SECRET_KEY is not set
+ * in the build environment (CI, sandbox). The error surfaces at runtime.
+ */
+let _stripe: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+    // Stripe SDK v22 requires the 2026-03-25.dahlia API version string
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2026-03-25.dahlia',
+    });
+  }
+  return _stripe;
+}
+
+/**
+ * For backward compatibility — existing route files use `stripe.xxx`.
+ * This re-exports a Proxy so callers keep `stripe.checkout.sessions.create()`
+ * syntax while still being lazily initialized.
+ */
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    return Reflect.get(getStripe(), prop);
+  },
 });
 
 export const PLANS = {
@@ -21,7 +47,7 @@ export const PLANS = {
   PRO: {
     name: 'Pro',
     price: 999,
-    priceId: process.env.STRIPE_PRO_PRICE_ID!,
+    priceId: process.env.STRIPE_PRO_PRICE_ID ?? '',
     features: [
       'Unlimited transactions',
       'Advanced AI insights',
