@@ -102,7 +102,7 @@ export default function AIChatClient({ isPro, financialContext }: AIChatClientPr
 
   if (!isPro) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] animate-fade-in">
+      <div className="flex flex-col items-center justify-center animate-fade-in">
         <div className="glass rounded-3xl p-12 text-center max-w-lg relative overflow-hidden">
           <div className="absolute inset-0 bg-primary/5 pointer-events-none" aria-hidden="true" />
           <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-6">
